@@ -1,0 +1,496 @@
+<!doctype html>
+
+<head>
+	<title>Pauline's Project for CS 416 - Data Viz</title>
+	<link rel="stylesheet" href="style.css">
+	<script src="http://d3js.org/d3.v3.min.js"></script>
+	<script src="https://rawgit.com/susielu/d3-annotation/master/d3-annotation.min.js"></script>
+</head>
+
+<body>
+
+	<h1>How much do Data Scientists make? </h1>
+	<h2 class="subtitle">Sample Salaries for Data Scientists across company sizes and experience levels.</h2>
+	<div id="vis-nav">
+		<button type="button" value=1 class='scene-button'>Scene 1</button>
+		<button type="button" value=2 class='scene-button'>Scene 2</button>
+		<button type="button" value=3 class='scene-button'>Scene 3</button>
+		<button type="button" value=4 class='scene-button'>Scene 4</button>
+	</div>
+
+	<div id="vis-canvas"></div>
+	<div id="chart1" class="chart-vis"></div>
+	<div id="chart2" class="chart-vis">
+		<div id="ann1">Data scientists in smaller companies can have higher salaries than data scientists in larger
+			companies.</div>
+	</div>
+	<div id="chart3" class="chart-vis"></div>
+	<div id="chart4" class="chart-vis">
+		Filter for experience level: <select id="selectButton"></select>
+	</div>
+	<script>
+		// Set the dimensions of the canvas
+		var margin = { top: 50, right: 50, bottom: 50, left: 80 },
+			width = 940 - margin.left - margin.right,
+			height = 500 - margin.top - margin.bottom;
+
+		function drawGraph(param) {
+			console.log(`Drawing graph ${param}`);
+			switch (param) {
+				case 1: drawFirstGraph();
+					break;
+				case 2: drawSecondGraph();
+					break;
+				case 3: drawThirdGraph();
+					break;
+				case 4: drawFourthGraph();
+					break;
+				default:
+					console.log(`No graph to display for param: ${param}`)
+			}
+		};
+
+		function drawFirstGraph() {
+
+			// Set the ranges
+			var x = d3.scale.linear()
+				.range([0, width]);
+			var y = d3.scale.linear()
+				.range([height, 0]);
+
+			var color = d3.scale.category10();
+
+			// Define the axes
+			var xAxis = d3.svg.axis()
+				.scale(x)
+				.orient("bottom").ticks(4);
+
+			var yAxis = d3.svg.axis()
+				.scale(y)
+				.orient("left");
+
+			// Add the svg canvas
+			var svg = d3.select("#chart1").append("svg")
+				.attr("width", width + margin.left + margin.right)
+				.attr("height", height + margin.top + margin.bottom)
+				.append("g")
+				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+			// Get the data
+			d3.csv("https://raw.githubusercontent.com/c3-pbrunet/DVproject/main/ds_salaries_small.csv", function (error, data) {
+				if (error) throw error;
+				data.forEach(function (d) {
+					d.experience_level = +d.experience_level;
+					d.salary_in_usd = +d.salary_in_usd;
+					d.company_size = +d.company_size;
+				});
+
+				// Scale the range of the data
+				x.domain(d3.extent(data, function (d) { return d.company_size; })).nice();
+				y.domain(d3.extent(data, function (d) { return d.salary_in_usd; })).nice();
+
+				// Add the X Axis
+				svg.append("g")
+					.attr("class", "x axis")
+					.attr("transform", "translate(0," + height + ")")
+					.call(xAxis)
+					.append("text")
+					.attr("class", "label")
+					.attr("x", width)
+					.attr("y", -6)
+					.style("text-anchor", "middle")
+					.text("Company Size");
+
+				// Add the Y Axis
+				svg.append("g")
+					.attr("class", "y axis")
+					.call(yAxis)
+					.append("text")
+					.attr("class", "label")
+					.attr("transform", "rotate(-90)")
+					.attr("y", 6)
+					.attr("dy", ".71em")
+					.style("text-anchor", "end")
+					.text("Salary")
+
+				// Add the Scatterplot 
+				svg.selectAll(".dot")
+					.data(data)
+					.enter().append("circle")
+					.attr("class", "dot")
+					.attr("r", 5)
+					.attr("cx", function (d) { return x(d.company_size); })
+					.attr("cy", function (d) { return y(d.salary_in_usd); });
+
+			})
+		};
+
+		function drawSecondGraph() {
+			// Add the svg canvas 2
+			var chart2 = d3.select("#chart2")
+				.append("svg")
+				.attr("width", width + margin.left + margin.right)
+				.attr("height", height + margin.top + margin.bottom)
+				.append("g")
+				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+			// Set the ranges
+			var x = d3.scale.linear()
+				.range([0, width]);
+			var y = d3.scale.linear()
+				.range([height, 0]);
+
+			var color = d3.scale.category10();
+
+			// Define the axes
+			var xAxis = d3.svg.axis()
+				.scale(x)
+				.orient("bottom").ticks(4);
+
+			var yAxis = d3.svg.axis()
+				.scale(y)
+				.orient("left");
+
+			/// Get the data
+			d3.csv("https://raw.githubusercontent.com/c3-pbrunet/DVproject/main/ds_salaries_small.csv", function (error, data) {
+				if (error) throw error;
+				data.forEach(function (d) {
+					d.experience_level = +d.experience_level;
+					d.salary_in_usd = +d.salary_in_usd;
+					d.company_size = +d.company_size;
+				});
+
+				// Scale the range of the data
+				x.domain(d3.extent(data, function (d) { return d?.company_size; })).nice();
+				y.domain(d3.extent(data, function (d) { return d?.salary_in_usd; })).nice();
+
+				// Add the X Axis
+				chart2.append("g")
+					.attr("class", "x axis")
+					.attr("transform", "translate(0," + height + ")")
+					.call(xAxis)
+					.append("text")
+					.attr("class", "label")
+					.attr("x", width)
+					.attr("y", -6)
+					.style("text-anchor", "middle")
+					.text("Company size");
+
+				// Add the Y Axis
+				chart2.append("g")
+					.attr("class", "y axis")
+					.call(yAxis)
+					.append("text")
+					.attr("class", "label")
+					.attr("transform", "rotate(-90)")
+					.attr("y", 6)
+					.attr("dy", ".71em")
+					.style("text-anchor", "end")
+					.text("Salary $")
+
+				var color = d3.scale.category10();
+
+				// Add the scatter plot
+				chart2.selectAll(".dot")
+					.data(data)
+					.enter().append("circle")
+					.attr("class", "dot")
+					.attr("r", 5)
+					.attr("cx", function (d) { return x(d?.company_size); })
+					.attr("cy", function (d) { return y(d?.salary_in_usd); })
+
+			});
+		}
+
+		function drawThirdGraph() {
+
+			// Set the ranges
+			var x = d3.scale.linear()
+				.range([0, width]);
+			var y = d3.scale.linear()
+				.range([height, 0]);
+
+			var color = d3.scale.category10();
+
+			// Define the axes
+			var xAxis = d3.svg.axis()
+				.scale(x)
+				.orient("bottom").ticks(4);
+
+			var yAxis = d3.svg.axis()
+				.scale(y)
+				.orient("left");
+
+			// Add the svg canvas
+			var chart3 = d3.select("#chart3").append("svg")
+				.attr("width", width + margin.left + margin.right)
+				.attr("height", height + margin.top + margin.bottom)
+				.append("g")
+				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+			// Get the data
+			d3.csv("https://raw.githubusercontent.com/c3-pbrunet/DVproject/main/ds_salaries_small.csv", function (error, data) {
+				if (error) throw error;
+				data.forEach(function (d) {
+					d.experience_level = +d.experience_level;
+					d.salary_in_usd = +d.salary_in_usd;
+					d.company_size = +d.company_size;
+					d.country = +d.country;
+				});
+
+				// Scale the range of the data
+				x.domain(d3.extent(data, function (d) { return d.company_size; })).nice();
+				y.domain(d3.extent(data, function (d) { return d.salary_in_usd; })).nice();
+
+				// Add the X Axis
+				chart3.append("g")
+					.attr("class", "x axis")
+					.attr("transform", "translate(0," + height + ")")
+					.call(xAxis)
+					.append("text")
+					.attr("class", "label")
+					.attr("x", width)
+					.attr("y", -6)
+					.style("text-anchor", "middle")
+					.text("Company Size");
+
+				// Add the Y Axis
+				chart3.append("g")
+					.attr("class", "y axis")
+					.call(yAxis)
+					.append("text")
+					.attr("class", "label")
+					.attr("transform", "rotate(-90)")
+					.attr("y", 6)
+					.attr("dy", ".71em")
+					.style("text-anchor", "end")
+					.text("Salary");
+
+				// Add the Scatterplot 
+				chart3.selectAll(".dot")
+					.data(data)
+					.enter().append("circle")
+					.attr("class", "dot")
+					.attr("r", 5)
+					.attr("cx", function (d) { return x(d.company_size); })
+					.attr("cy", function (d) { return y(d.salary_in_usd); })
+					.style("fill", function (d) { return color(d.experience_level); });
+
+				// Add the Legend
+				var legend = chart3.selectAll(".legend")
+					.data(color.domain())
+					.enter().append("g")
+					.attr("class", "legend")
+					.attr("transform", function (d, i) { return "translate(0," + i * 20 + ")"; });
+
+				legend.append("rect")
+					.attr("x", width - 18)
+					.attr("width", 18)
+					.attr("height", 18)
+					.style("fill", color);
+
+				legend.append("text")
+					.attr("x", width - 24)
+					.attr("y", 9)
+					.attr("dy", ".35em")
+					.style("text-anchor", "end")
+					.text(function (d) { return d; });
+			})
+
+		};
+
+		function drawFourthGraph() {
+
+			// Set the ranges
+			var x = d3.scale.linear()
+				.range([0, width]);
+			var y = d3.scale.linear()
+				.range([height, 0]);
+
+			var color = d3.scale.category10();
+
+			// Define the axes
+			var xAxis = d3.svg.axis()
+				.scale(x)
+				.orient("bottom").ticks(4);
+
+			var yAxis = d3.svg.axis()
+				.scale(y)
+				.orient("left");
+
+			// Add the svg canvas
+			var chart4 = d3.select("#chart4").append("svg")
+				.attr("width", width + margin.left + margin.right)
+				.attr("height", height + margin.top + margin.bottom)
+				.append("g")
+				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+			// Get the data
+			d3.csv("https://raw.githubusercontent.com/c3-pbrunet/DVproject/main/ds_salaries_small.csv", function (error, data) {
+				if (error) throw error;
+				data.forEach(function (d) {
+					d.experience_level = +d.experience_level;
+					d.salary_in_usd = +d.salary_in_usd;
+					d.company_size = +d.company_size;
+					d.country = +d.country;
+				});
+
+				// List of groups (here I have one group per column)
+				var allGroup = d3.map(data, function (d) { return (d.experience_level) }).keys()
+
+				// add the options to the button
+				d3.select("#selectButton")
+					.selectAll('myOptions')
+					.data(allGroup)
+					.enter()
+					.append('option')
+					.text(function (d) { return d; }) // text showed in the menu
+					.attr("value", function (d) { return d; }) // corresponding value returned by the button
+
+				// Scale the range of the data
+				x.domain(d3.extent(data, function (d) { return d.company_size; })).nice();
+				y.domain(d3.extent(data, function (d) { return d.salary_in_usd; })).nice();
+
+				// Add the X Axis
+				chart4.append("g")
+					.attr("class", "x axis")
+					.attr("transform", "translate(0," + height + ")")
+					.call(xAxis)
+					.append("text")
+					.attr("class", "label")
+					.attr("x", width)
+					.attr("y", -6)
+					.style("text-anchor", "middle")
+					.text("Company Size");
+
+				// Add the Y Axis
+				chart4.append("g")
+					.attr("class", "y axis")
+					.call(yAxis)
+					.append("text")
+					.attr("class", "label")
+					.attr("transform", "rotate(-90)")
+					.attr("y", 6)
+					.attr("dy", ".71em")
+					.style("text-anchor", "end")
+					.text("Salary");
+
+
+				// Add the Scatterplot 
+				chart4.selectAll(".dot")
+					.data(data)
+					.enter().append("circle")
+					.attr("class", "dot")
+					.attr("class", (d) => `dot-${d.experience_level}`)
+					.attr("r", 5)
+					.attr("cx", function (d) { return x(d.company_size); })
+					.attr("cy", function (d) { return y(d.salary_in_usd); })
+					.style("fill", function (d) { return color(d.experience_level); })
+					.style("display", "none");
+
+				chart4.selectAll(".dot-1").style("display", "block");
+
+
+				d3.select("#selectButton").on("change", function (d) {
+					var selectedOption = d3.select(this).property("value")
+					switch (selectedOption) {
+						case "1":
+							chart4.selectAll(".dot-1").style("display", "block");
+							chart4.selectAll(".dot-2").style("display", "none");
+							chart4.selectAll(".dot-3").style("display", "none");
+							chart4.selectAll(".dot-4").style("display", "none");
+							break;
+						case "2":
+							chart4.selectAll(".dot-1").style("display", "none");
+							chart4.selectAll(".dot-2").style("display", "block");
+							chart4.selectAll(".dot-3").style("display", "none");
+							chart4.selectAll(".dot-4").style("display", "none");
+							break;
+						case "3":
+							chart4.selectAll(".dot-1").style("display", "none");
+							chart4.selectAll(".dot-2").style("display", "none");
+							chart4.selectAll(".dot-3").style("display", "block");
+							chart4.selectAll(".dot-4").style("display", "none");
+							break;
+						case "4":
+							chart4.selectAll(".dot-1").style("display", "none");
+							chart4.selectAll(".dot-2").style("display", "none");
+							chart4.selectAll(".dot-3").style("display", "none");
+							chart4.selectAll(".dot-4").style("display", "block");
+							break;
+						default:
+							break;
+					}
+					chart4.selectAll(`.dot-${selectedOption}`).style("display", "block");
+				})
+
+				// Add the Legend
+				var legend = chart4.selectAll(".legend")
+					.data(color.domain())
+					.enter().append("g")
+					.attr("class", "legend")
+					.attr("transform", function (d, i) { return "translate(0," + i * 20 + ")"; });
+
+				legend.append("rect")
+					.attr("x", width - 18)
+					.attr("width", 18)
+					.attr("height", 18)
+					.style("fill", color);
+
+				legend.append("text")
+					.attr("x", width - 24)
+					.attr("y", 9)
+					.attr("dy", ".35em")
+					.style("text-anchor", "end")
+					.text(function (d) { return d; });
+			});
+		}
+
+		// Draw graphs
+		drawGraph(1);
+		drawGraph(2);
+		drawGraph(3);
+		drawGraph(4);
+
+		d3.select("#chart2").style("display", 'none')
+		d3.select("#chart3").style("display", 'none')
+		d3.select("#chart4").style("display", 'none')
+
+
+		d3.selectAll("button").on("click", function () {
+			const selected = this.value;
+			switch (selected) {
+				case "1":
+					d3.select("#chart1").style("display", 'block');
+					d3.select("#chart2").style("display", 'none');
+					d3.select("#chart3").style("display", 'none');
+					d3.select("#chart4").style("display", 'none');
+					break;
+				case "2":
+					d3.select("#chart1").style("display", 'none');
+					d3.select("#chart2").style("display", 'block');
+					d3.select("#chart3").style("display", 'none');
+					d3.select("#chart4").style("display", 'none');
+					break;
+				case "3":
+					d3.select("#chart1").style("display", 'none');
+					d3.select("#chart2").style("display", 'none');
+					d3.select("#chart3").style("display", 'block');
+					d3.select("#chart4").style("display", 'none');
+					break;
+				case "4":
+					d3.select("#chart1").style("display", 'none');
+					d3.select("#chart2").style("display", 'none');
+					d3.select("#chart3").style("display", 'none');
+					d3.select("#chart4").style("display", 'block');
+					break;
+				default: console.log("default");
+					break;
+			}
+
+		})
+
+	</script>
+</body>
+
+</html>
